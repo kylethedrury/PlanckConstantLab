@@ -1,0 +1,134 @@
+import numpy as np                                # import packages and give them quick handles since they will be used often
+import matplotlib.pyplot as plt
+from scipy import optimize                        # import a specific function from a package: 'optimize' for curve fitting
+
+file_nameA = 'test10a.txt'                          # replace with the name of your csv data file
+
+file_folderA = ''                                  # use this if your data file is in the same folder as your python program
+
+data_fileA = file_folderA + file_nameA
+print(data_fileA)
+
+
+xdataA, ydataA = np.loadtxt(                      
+        data_fileA,                               
+        delimiter = '\t',                      
+        skiprows = 1,
+        usecols = (0, 1),                      
+        unpack = True)                            
+def funcA(x,m,b):                                 
+    return m*x+b                                
+ 
+initialguessA = [0,-1]                     
+                                        
+fitA, covarianceA = optimize.curve_fit(            
+        funcA,                                    
+        xdataA,                                  
+        ydataA,                                   
+        initialguessA)                           
+
+print("offset:",fitA[0],"+-",np.sqrt(covarianceA[0][0]))    
+print("offset:",fitA[1],"+-",np.sqrt(covarianceA[1][1]))   
+print("Be sure to use the correct number of significant digits in your final answer!!!!!!!!!!!!!")
+
+file_nameB = 'test10b.txt'                        
+
+file_folderB = ''                                
+data_fileB = file_folderB + file_nameB
+print(data_fileB)
+
+
+xdataB, ydataB = np.loadtxt(                       
+        data_fileB,                             
+        delimiter = '\t',                       
+        skiprows = 1,
+        usecols = (0, 1),                       
+        unpack = True)                                                                                                                      
+
+def funcB(x,m,b):                               
+    return m*x+b                                
+ 
+initialguessB = [0,-1]                            
+
+fitB, covarianceB = optimize.curve_fit(           
+        funcB,                                    
+        xdataB,                                  
+        ydataB,                                  
+        initialguessB)                            
+
+print("offset:",fitB[0],"+-",np.sqrt(covarianceB[0][0]))     
+print("offset:",fitB[1],"+-",np.sqrt(covarianceB[1][1]))   
+print("Be sure to use the correct number of significant digits in your final answer!!!!!!!!!!!!!")
+
+ma = fitA[0]
+alphama = np.sqrt(covarianceA[0][0])
+ba = fitA[1]
+alphaba = np.sqrt(covarianceA[1][1]) 
+
+mb = fitB[0]
+alphamb = np.sqrt(covarianceB[0][0])
+bb = fitB[1]
+alphabb = np.sqrt(covarianceB[1][1]) 
+
+##########
+# Plotting data and fit
+##########
+
+xdataAfit=np.linspace(min(xdataA), max(xdataA), 100) 
+funcA_plot=funcA(xdataAfit,*fitA)                     
+
+xdataBfit=np.linspace(min(xdataB), max(xdataB), 100) 
+funcB_plot=funcB(xdataBfit,*fitB)                                                          
+
+plt.plot(xdataAfit, funcA_plot)                  
+plt.errorbar(xdataA, ydataA, fmt='k.')             
+xdataAfit=np.linspace(min(xdataA), max(xdataA), 100)
+funcA_plot=funcA(xdataAfit,*fitA)                    
+                                     
+plt.plot(xdataBfit, funcB_plot)                    
+plt.errorbar(xdataB, ydataB, fmt='k.') 
+xdataBfit=np.linspace(min(xdataB), max(xdataB), 100)
+funcB_plot=funcB(xdataBfit,*fitB)
+
+plt.title('Voltage vs. Current')
+plt.xlabel('Voltage',fontsize = 18)
+plt.ylabel('Current',fontsize = 18)
+
+plt.show()
+plt.savefig("./"+file_name+'_DataWithFit.pdf',dpi=300)         
+plt.clf()
+
+##########
+# Plotting residuals
+##########
+
+funcA_model=func(xdataA,*fitA)            
+residualA = (ydataA-funcA_model)                
+plt.errorbar(xdataA, residualA, fmt='k.')   
+plt.plot(xdataA, residualA)                  
+plt.axhline(y=0.0, color='r', linestyle='-') 
+
+funcB_model=func(xdataB,*fitB)                 
+residualB = (ydataB-funcB_model)               
+plt.errorbar(xdataB, residualB, fmt='k.')    
+plt.plot(xdataB, residualB)                 
+plt.axhline(y=0.0, color='g', linestyle='-') 
+
+plt.title('Residual')
+plt.xlabel('X',fontsize = 18)
+plt.ylabel('Y',fontsize = 18)
+plt.savefig("./"+file_name+'Residual.pdf',dpi=300)        
+plt.show()
+plt.clf()
+
+c = ma - mb
+d = bb - ba
+alphac = alphama + alphamb
+alphad = alphabb + alphaba
+
+percenterror = (alphac/c) + (alphad/d) 
+x = c/d 
+alphax = percenterror*x
+
+print(x,"+-",alphax)
+

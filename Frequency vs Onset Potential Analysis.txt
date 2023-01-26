@@ -1,0 +1,49 @@
+import numpy as np                                # import packages and give them quick handles since they will be used often
+import matplotlib.pyplot as plt
+from scipy import optimize                        # import a specific function from a package: 'optimize' for curve fitting
+
+file_name = 'newData.txt'                          # replace with the name of your csv data file
+
+file_folder = ''                                  # use this if your data file is in the same folder as your python program
+
+data_file = file_folder + file_name
+print(data_file)
+
+xdata, ydata, yerr = np.loadtxt(                      
+        data_file,                               
+        delimiter = '\t',                      
+        skiprows = 1,
+        usecols = (0, 1, 2),                      
+        unpack = True)    
+
+def func(x,m,b):                                 
+    return m*x+b                                
+ 
+initialguess = [1,1]                     
+                                        
+fit, covariance = optimize.curve_fit(            
+        func,                                    
+        xdata,                                  
+        ydata,
+        initialguess,
+        yerr)                           
+
+print("offset:",fit[0],"+-",np.sqrt(covariance[0][0]))    
+print("offset:",fit[1],"+-",np.sqrt(covariance[1][1]))   
+print("Be sure to use the correct number of significant digits in your final answer!!!!!!!!!!!!!")
+
+xdatafit=np.linspace(min(xdata), max(xdata), 100) 
+func_plot=func(xdatafit,*fit)       
+
+plt.plot(xdatafit, func_plot)                  
+plt.errorbar(xdata, ydata, yerr, fmt='k.')             
+xdatafit=np.linspace(min(xdata), max(xdata), 100)
+func_plot=func(xdatafit,*fit)    
+
+plt.title('Frequency vs. Onset Voltage')
+plt.xlabel('Frequency (Hz x 1e14)',fontsize = 18)
+plt.ylabel('Onset Voltage',fontsize = 18)
+
+plt.show()
+plt.savefig("./"+file_name,dpi=300)         
+plt.clf()
